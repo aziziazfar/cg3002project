@@ -1,7 +1,6 @@
-#include <Wire.h> // for IMUs
-#include <Arduino_FreeRTOS.h>
-#include <semphr.h>
-#include <task.h>
+#include "Arduino_FreeRTOS.h"
+#include "semphr.h"
+#include "task.h"
 
 #define STACK_SIZE 200
 
@@ -39,22 +38,21 @@ struct sensorReadings leg_right;
 /*********************************/
 
 /****** DATA SERIALIZATION *******/
-const int packetLength = 26;
+const int packetLength = 24;
 const int bufferSize = 16;
 int sendId = 0;  // data yet to be ack by rpi (head of ringbuffer)
 int insertId = 0; // data to save to 
 unsigned char ringBuffer[bufferSize][packetLength];
 
 // Copies structure data into an array of char
-unsigned int serialize(unsigned char *buf, uint8_t *p, size_t size) {
+unsigned int serialize(unsigned char *buf, int8_t *p, size_t size) {
   char checksum = 0;
-  buf[0] = size;
+  buf[0] = size+2;
   memcpy(buf+1, p, size);
   for(int i=1; i<=size; i++) {
     checksum ^= buf[i];
   }
   buf[size+1] = checksum;
-  Serial.println("Sending data");
   
   // insert buf into ring buffer
   if(xSemaphoreTake(xSemaphoreBuffer, 5) == pdTRUE) {
@@ -62,12 +60,13 @@ unsigned int serialize(unsigned char *buf, uint8_t *p, size_t size) {
     insertId = (insertId + 1) % bufferSize;
     xSemaphoreGive(xSemaphoreBuffer);
   }
-  
+  Serial.print("size is ");
+  Serial.println(size+2);
   return size+2;
 }
 
 void sendDataPacket() {
-  uint8_t cfg[packetLength];
+  int8_t cfg[packetLength];
   unsigned char buffer[64];
 
   // Copy sensor data to data packet
@@ -104,7 +103,11 @@ void sendDataPacket() {
 }
 
 void sendSerialData(unsigned char *buffer, int len) {
+  Serial.print("len is ");
+  Serial.println(len);
   for(int i=0; i<len; i++) {
+    Serial.print("Test send: ");
+    Serial.println(buffer[i]);
     Serial2.println(buffer[i]);
   }
 }
@@ -216,18 +219,22 @@ void setup() {
 
   // Wait for serial port to be available before sending handshake message
   while(!Serial2) {
+//  while(!Serial) {
     delay(100);
   }
   
   // Keep waiting for 'H' from RPi
   while(!Serial2.available() || Serial2.read() != 'H') {      // no ACK
+//  while(!Serial.available() || Serial.read() != 'H') {
     delay(100);
   }
 
   // Respond with 'A' from RPi
   Serial2.write('A');
+//  Serial.write('A');
   // Wait for 'A' from RPi
   while(!Serial2.available() || Serial2.read() != 'A') {
+//  while(!Serial.available() || Serial.read() != 'A') {
     delay(100);
   }
   Serial.println("Connection established");
