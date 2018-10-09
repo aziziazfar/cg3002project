@@ -87,27 +87,27 @@ void setup() {
 void loop() {
   int voltage = analogRead(A0);
   //divide by 1023, multiply by 5V, multiply by 2 (because resistors same) 
-  Serial3.print("Voltage: ");
+  Serial.print("Voltage: ");
   float realV = voltage / 1023.0 * 5 * 2;
-  Serial3.print(realV);
+  Serial.print(realV);
 
   float sensorValue = analogRead(A1);
   float sensor = (sensorValue * 5) / 1023; //Vo
   float current = (sensor) / (0.1 * 10) * 1000 * (3.5-0.35) + 0.35; //changing the range of current to 0.35A to 3.5A
   //Serial3.print(" and vout: ");
   //Serial3.print(sensorValue);
-  Serial3.print("V; Current: ");
-  Serial3.print(current);
-  Serial3.print("mA; Power: ");
+  //Serial.print("V; Current: ");
+  //Serial.print(current);
+  //Serial.print("mA; Power: ");
 
   float power = current * realV;
-  Serial3.print(power);
-  Serial3.print("mW; Energy: ");
+  //Serial.print(power);
+  //Serial.print("mW; Energy: ");
 
   unsigned long currentMillis = millis();
   energy += power / 1000 * ((currentMillis - prevMillis) / 1000.0);
-  Serial3.print(energy);
-  Serial3.println("J");
+  //Serial.print(energy);
+  //Serial.println("J");
   prevMillis = currentMillis;
 
   if (counter == 0) {
@@ -115,7 +115,7 @@ void loop() {
         digitalWrite(51, HIGH);
         digitalWrite(52, HIGH);
         digitalWrite(53, HIGH);
-        Serial.print("first: ");
+        //Serial.print("first: ");
         Serial3.print("first: ");
   } else if (counter == 1) {
         digitalWrite(50, HIGH);
@@ -129,7 +129,7 @@ void loop() {
         digitalWrite(51, HIGH);
         digitalWrite(52, LOW);
         digitalWrite(53, HIGH);
-        Serial.print("third: ");
+        //Serial.print("third: ");
         Serial3.print("third: ");
   } else {
         digitalWrite(50, HIGH);
@@ -153,7 +153,8 @@ void loop() {
     int16_t convertedgx = gx * gyroConverter;
     int16_t convertedgy = gy * gyroConverter;
     int16_t convertedgz = gz * gyroConverter;
-    
+
+    if (counter == 1 || counter == 3) {
     Serial.print("a/g:\t");
     Serial.print(ax); Serial.print("\t");
     Serial.print(ay); Serial.print("\t");
@@ -161,14 +162,15 @@ void loop() {
     Serial.print(gx); Serial.print("\t");
     Serial.print(gy); Serial.print("\t");
     Serial.println(gz);
-
+    }
+/*
     Serial.print("a/g (in g and degrees):\t");
     Serial.print(convertedax); Serial.print("g\t");
     Serial.print(converteday); Serial.print("g\t");
     Serial.print(convertedaz); Serial.print("g\t");
     Serial.print(convertedgx); Serial.print("deg\t");
     Serial.print(convertedgy); Serial.print("deg\t");
-    Serial.print(convertedgz); Serial.println("deg");
+    Serial.print(convertedgz); Serial.println("deg");*/
   /*
     Serial3.print("a/g:\t");
     Serial3.print(ax); Serial3.print("\t");
@@ -187,5 +189,5 @@ void loop() {
     Serial3.println(convertedgz); */
   
   counter = (counter + 1) % 4;
-  delay(333);
+  delay(10);
 }
