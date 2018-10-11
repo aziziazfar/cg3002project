@@ -41,7 +41,7 @@ def pad(var1):
 
 while (x<10):
 #padding to ensure that the message is of fixed size
-    action = input("Enter action: ")
+    action = input("#'action'|'voltage'|'current'|'power'|'cumpower'|\n")
     temp = str(action)
     temp = temp.strip()
     stringToSend = encryptText(temp, key)
